@@ -1,6 +1,6 @@
 <html>
 <body>
-
+<h1> hello </h1>
 <form action="<%= request.getContextPath() %>/teacherLogin" method="post">
     <input type="text" name="username" placeholder="Username">
     <input type="password" name="passwordHash" placeholder="Password">

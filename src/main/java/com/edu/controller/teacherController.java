@@ -1,7 +1,5 @@
 package com.edu.controller;
 
-import org.springframework.web.client.HttpServerErrorException;
-
 import jakarta.servlet.ServletException;
 import jakarta.servlet.annotation.WebServlet;
 import jakarta.servlet.http.HttpServlet;
@@ -14,8 +12,6 @@ import jakarta.servlet.http.HttpServletResponse;
 import jakarta.servlet.http.HttpSession;
 
 import java.io.IOException;
-import java.net.URLEncoder;
-import java.io.PrintWriter;
 
 @WebServlet({ "/teachersignup", "/teacherLogin" })
 public class teacherController extends HttpServlet {
@@ -25,11 +21,16 @@ public class teacherController extends HttpServlet {
         userdao = new userDAO();
     }
 
-    protected void doPost(HttpServletRequest request, HttpServletResponse resp) throws ServletException, IOException {
+    @Override
+    protected void doPost(HttpServletRequest request, HttpServletResponse resp)
+            throws ServletException, IOException {
         String path = request.getServletPath();
 
+        resp.setContentType("application/json");
+        resp.setCharacterEncoding("UTF-8");
+
         if ("/teachersignup".equals(path)) {
-            // --- signup logic (unchanged) ---
+            // --- signup logic ---
             User user = new User();
             user.setUsername(request.getParameter("username"));
             user.setName(request.getParameter("name"));
@@ -38,8 +39,12 @@ public class teacherController extends HttpServlet {
             user.setRole(request.getParameter("role"));
 
             String msg = userdao.insertUser(user);
-            resp.sendRedirect(request.getContextPath() + "/views/teacherSignup.jsp?msg="
-                    + URLEncoder.encode(msg, "UTF-8"));
+
+            if (msg.contains("successfully")) {
+                resp.getWriter().write("{\"status\":\"success\",\"message\":\"" + msg + "\"}");
+            } else {
+                resp.getWriter().write("{\"status\":\"error\",\"message\":\"" + msg + "\"}");
+            }
 
         } else if ("/teacherLogin".equals(path)) {
             // --- login logic ---
@@ -49,18 +54,15 @@ public class teacherController extends HttpServlet {
             boolean valid = userdao.userlogin(username, password);
 
             if (valid) {
-                // Create session for user
                 HttpSession session = request.getSession();
                 session.setAttribute("username", username);
                 session.setMaxInactiveInterval(30 * 60); // 30 minutes
 
-                // Forward to JSP with message
-                request.setAttribute("msg", "Login Successful ✅");
-                request.getRequestDispatcher("/views/teacherLogin.jsp").forward(request, resp);
+                String role = userdao.getUserRole(username);
 
+                resp.getWriter().write("{\"status\":\"success\", \"role\":\"" + role + "\"}");
             } else {
-                request.setAttribute("msg", "Invalid username or password ❌");
-                request.getRequestDispatcher("/views/teacherLogin.jsp").forward(request, resp);
+                resp.getWriter().write("{\"status\":\"error\", \"message\":\"Invalid username or password\"}");
             }
         }
     }

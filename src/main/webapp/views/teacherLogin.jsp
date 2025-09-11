@@ -1,7 +1,7 @@
 <html>
 <body>
 <h1> hello </h1>
-<form action="<%= request.getContextPath() %>/teacherLogin" method="post">
+<form action="<%= request.getContextPath() %>/TeacherLoginServlet" method="post">
     <input type="text" name="username" placeholder="Username">
     <input type="password" name="passwordHash" placeholder="Password">
     <input type="submit" value="Login">
@@ -18,6 +18,6 @@
 <% 
     } 
 %>
-<h3>end</h3>
+<h3>end</h3> 
 </body>
 </html>

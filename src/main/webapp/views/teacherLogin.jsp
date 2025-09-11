@@ -11,6 +11,7 @@
     String msg = (String) request.getAttribute("msg");
     if (msg != null) { 
 %>
+
     <p style="color:<%= msg.contains("Invalid") ? "red" : "green" %>; font-weight:bold;">
         <%= msg %>
     </p>

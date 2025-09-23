@@ -11,6 +11,12 @@ public class Resource {
     private String fileLink;    // VARCHAR(500)
     private String type;        // ENUM('PDF', 'Video', 'Quiz')
     private String language;    // ENUM('Tamil', 'English')
+// Add this field to your Resource class
+private long uploadedBy;  // Foreign key to users table
+
+// Add these getter and setter methods
+public long getUploadedBy() { return uploadedBy; }
+public void setUploadedBy(long uploadedBy) { this.uploadedBy = uploadedBy; }
 
     // Getters & Setters
     public int getId() { return id; }

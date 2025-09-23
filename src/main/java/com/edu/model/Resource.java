@@ -4,7 +4,7 @@ import javax.persistence.Entity;
 
 @Entity
 public class Resource {
-    private int id;             // INT -> int
+    private int id;            
     private String grade;       // VARCHAR(10)
     private String subject;     // VARCHAR(50)
     private String title;       // VARCHAR(255)

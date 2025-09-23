@@ -12,8 +12,9 @@ import jakarta.servlet.http.HttpServletResponse;
 import jakarta.servlet.http.HttpSession;
 
 import java.io.IOException;
+import java.sql.SQLException;
 
-@WebServlet({ "/teachersignup", "/teacherLogin" })
+@WebServlet({ "/teachersignupServlet", "/teacherloginServlet" })
 public class teacherController extends HttpServlet {
     private userDAO userdao;
 
@@ -29,24 +30,38 @@ public class teacherController extends HttpServlet {
         resp.setContentType("application/json");
         resp.setCharacterEncoding("UTF-8");
 
-        if ("/teachersignup".equals(path)) {
+        if ("/teachersignupServlet".equals(path)) {
             // --- signup logic ---
+            String username = request.getParameter("username");
+            String fullname = request.getParameter("fullname");
+            String email = request.getParameter("email");
+            String password_hash = request.getParameter("password_hash");
+            String confirmpassword = request.getParameter("confirmpassword");
+            String role = request.getParameter("role");
+          try{
+            boolean isnewusername = userdao.isUsernameAvailable(username);
+if(isnewusername){
             User user = new User();
-            user.setUsername(request.getParameter("username"));
-            user.setName(request.getParameter("name"));
-            user.setEmail(request.getParameter("email"));
-            user.setPasswordHash(request.getParameter("passwordHash"));
-            user.setRole(request.getParameter("role"));
+             user.setName(fullname);
+            user.setUsername(username);
+             user.setEmail(email);
+            user.setRole(role);
+            user.setPasswordHash(password_hash);
 
-            String msg = userdao.insertUser(user);
+        
+            long userid = userdao.insertUser(user);
 
-            if (msg.contains("successfully")) {
-                resp.getWriter().write("{\"status\":\"success\",\"message\":\"" + msg + "\"}");
+            if (userid!=-1) {
+                resp.getWriter().write("{\"status\":\"success\",\"message\":\"" + "INSERTED SUCCESSFULLY" + "\"}");
             } else {
-                resp.getWriter().write("{\"status\":\"error\",\"message\":\"" + msg + "\"}");
+                resp.getWriter().write("{\"status\":\"error\",\"message\":\"" +"USER NOT INSERTED" + "\"}");
             }
+        }}
+        catch(SQLException e){
 
-        } else if ("/teacherLogin".equals(path)) {
+        }
+        } 
+        else if ("/teacherloginServlet".equals(path)) {
             // --- login logic ---
             String username = request.getParameter("username");
             String password = request.getParameter("passwordHash");

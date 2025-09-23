@@ -1,13 +1,17 @@
 <html>
+<head>
+<title>
+    Student Signup
+    </title>
+    <head>
 <body>
-<h1> hello </h1>
-<form action="<%= request.getContextPath() %>/teacherloginServlet" method="post">
+<div class ="form">
+<form action="<%= request.getContextPath() %>/studentloginServlet" method="post">
     <input type="text" name="username" placeholder="Username">
     <input type="password" name="passwordHash" placeholder="Password">
     <input type="submit" value="Login">
 </form>
 
-
-<h3>end</h3> 
+</div>
 </body>
 </html>

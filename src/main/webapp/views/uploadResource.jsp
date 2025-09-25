@@ -96,7 +96,7 @@
             </div>
             
             <button type="submit" class="btn btn-primary">Upload Resource</button>
-            <a href="${pageContext.request.contextPath}/dashboard" class="btn btn-secondary">Back to Dashboard</a>
+            <a href="${pageContext.request.contextPath}/views/teacherDashboard.jsp" class="btn btn-secondary">Back to Dashboard</a>
         </form>
     </div>
 </body>

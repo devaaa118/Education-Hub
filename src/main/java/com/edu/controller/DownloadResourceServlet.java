@@ -24,11 +24,7 @@ public class DownloadResourceServlet extends HttpServlet {
         // Check if user is logged in
         User user = (User) request.getSession().getAttribute("user");
         if (user == null) {
-            if ("teacher".equals(user.getRole())) {
-                response.sendRedirect(request.getContextPath() + "/views/teacherLogin.jsp");
-            } else {
-                response.sendRedirect(request.getContextPath() + "/views/studentLogin.jsp");
-            }
+            response.sendRedirect(request.getContextPath() + "/views/studentLogin.jsp");
             return;
         }
         
@@ -57,8 +53,16 @@ public class DownloadResourceServlet extends HttpServlet {
         }
         
         // Get the file path
-        String filePath = getServletContext().getRealPath("") + File.separator + resource.getFileLink();
-        File file = new File(filePath);
+    // Line 60 in DownloadResourceServlet.java
+String filePath;
+if (resource.getFileLink().startsWith("uploads/")) {
+    // New format (using WildFly data directory)
+    filePath = System.getProperty("jboss.server.data.dir") + "/" + resource.getFileLink();
+} else {
+    // Old format (using web app directory)
+    filePath = getServletContext().getRealPath("") + File.separator + resource.getFileLink();
+}
+  File file = new File(filePath);
         
         if (!file.exists()) {
             response.sendError(HttpServletResponse.SC_NOT_FOUND, "File not found");

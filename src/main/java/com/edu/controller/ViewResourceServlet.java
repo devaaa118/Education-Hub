@@ -18,14 +18,10 @@ public class ViewResourceServlet extends HttpServlet {
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response) 
             throws ServletException, IOException {
-        // Check if user is logged in
+        
         User user = (User) request.getSession().getAttribute("user");
         if (user == null) {
-            if ("teacher".equals(user.getRole())) {
-                response.sendRedirect(request.getContextPath() + "/views/teacherLogin.jsp");
-            } else {
-                response.sendRedirect(request.getContextPath() + "/views/studentLogin.jsp");
-            }
+            response.sendRedirect(request.getContextPath() + "/views/studentLogin.jsp");
             return;
         }
         

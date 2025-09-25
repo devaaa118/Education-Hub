@@ -81,7 +81,7 @@ response.sendRedirect(request.getContextPath() + "/views/teacherLogin.jsp");
                 }
             } else if (grade != null || subject != null || type != null || language != null) {
                 // Apply filters
-                resources = resourceDAO.getFilteredResources(grade, subject, type, language);
+                resources = resourceDAO.getFilteredResources(grade, subject, type, language, null);
                 totalResources = resources.size();
                 
                 // Apply pagination manually

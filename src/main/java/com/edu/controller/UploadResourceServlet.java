@@ -28,8 +28,9 @@ import java.util.UUID;
 )
 public class UploadResourceServlet extends HttpServlet {
     
-    private static final String UPLOAD_DIRECTORY = "WEB-INF/uploads";
-    
+  
+// To this
+private static final String UPLOAD_DIRECTORY = System.getProperty("jboss.server.data.dir") + "/uploads"; 
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response) 
             throws ServletException, IOException {
@@ -50,7 +51,7 @@ public class UploadResourceServlet extends HttpServlet {
         // Check if user is logged in and is a teacher
         User user = (User) request.getSession().getAttribute("user");
         if (user == null || !"teacher".equals(user.getRole())) {
-            response.sendRedirect(request.getContextPath() + "/login");
+                response.sendRedirect(request.getContextPath() + "/views/teacherLogin.jsp");
             return;
         }
         
@@ -74,8 +75,8 @@ public class UploadResourceServlet extends HttpServlet {
         }
         
         // Create upload directory if it doesn't exist
-        String uploadPath = getServletContext().getRealPath("") + File.separator + UPLOAD_DIRECTORY;
-        File uploadDir = new File(uploadPath);
+        String uploadPath = UPLOAD_DIRECTORY;
+      File uploadDir = new File(uploadPath);
         if (!uploadDir.exists()) {
             uploadDir.mkdirs();
         }
@@ -95,8 +96,7 @@ resource.setTitle(title);
 resource.setGrade(grade);
 resource.setSubject(subject);
 resource.setType(type);
-resource.setLanguage(language);
-resource.setFileLink(UPLOAD_DIRECTORY + "/" + uniqueFileName);
+resource.setLanguage(language);resource.setFileLink("uploads/" + uniqueFileName);
 resource.setUploadedBy(user.getId());  // Set the user ID as the uploader
   
         // Save the resource to the database

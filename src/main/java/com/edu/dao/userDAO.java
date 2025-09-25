@@ -44,15 +44,27 @@ public class userDAO {
     }
 
     public void insertStudentClasses(long student_id, long class_id) throws SQLException{
+        System.out.println("DAO DEBUG: Inserting student_id=" + student_id + ", class_id=" + class_id + " (no stream)");
         try(Connection con = getConnection();){
-            String sql = "INsert into student_classes (student_id,class_id) VALUES (?,?)";
+            String sql = "INSERT INTO student_classes (student_id,class_id) VALUES (?,?)";
             PreparedStatement ps = con.prepareStatement(sql);
             ps.setLong(1,student_id);
             ps.setLong(2,class_id);
-
             ps.executeUpdate();
         }
+    }
 
+    // Overloaded: for grades 11/12, insert with stream_id
+    public void insertStudentClasses(long student_id, long class_id, int stream_id) throws SQLException{
+        System.out.println("DAO DEBUG: Inserting student_id=" + student_id + ", class_id=" + class_id + ", stream_id=" + stream_id);
+        try(Connection con = getConnection();){
+            String sql = "INSERT INTO student_classes (student_id,class_id,stream_id) VALUES (?,?,?)";
+            PreparedStatement ps = con.prepareStatement(sql);
+            ps.setLong(1,student_id);
+            ps.setLong(2,class_id);
+            ps.setInt(3,stream_id);
+            ps.executeUpdate();
+        }
     }
 
 
@@ -97,5 +109,34 @@ public boolean isUsernameAvailable(String username) throws SQLException {
 
     } 
 }
+
+public User getUserByUsername(String username) {
+    String sql = "SELECT * FROM users WHERE username = ?";
+    try (Connection con = getConnection(); 
+         PreparedStatement ps = con.prepareStatement(sql)) {
+        ps.setString(1, username);
+        ResultSet rs = ps.executeQuery();
+        if (rs.next()) {
+            User user = new User();
+            user.setId(rs.getLong("id"));
+            user.setUsername(rs.getString("username"));
+            user.setName(rs.getString("name"));
+            user.setEmail(rs.getString("email"));
+            user.setRole(rs.getString("role"));
+            // Set createdAt if present
+            try {
+                user.setCreatedAt(rs.getTimestamp("created_at"));
+            } catch (Exception e) {
+                // Ignore if column missing
+            }
+            // Don't set the password for security reasons
+            return user;
+        }
+    } catch (Exception e) {
+        e.printStackTrace();
+    }
+    return null;
+}
+
     }
 

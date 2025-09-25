@@ -59,7 +59,7 @@
                 <a href="${pageContext.request.contextPath}/delete-resource?id=${resource.id}" class="btn btn-danger" onclick="return confirm('Are you sure you want to delete this resource?')">Delete Resource</a>
             </c:if>
             
-            <a href="${pageContext.request.contextPath}/dashboard" class="btn btn-link">Back to Dashboard</a>
+            <a href="${pageContext.request.contextPath}/views/studentDashboard.jsp" class="btn btn-link">Back to Dashboard</a>
         </div>
     </div>
 </body>

@@ -21,6 +21,14 @@
             margin: 36px auto 60px auto;
             padding: 0 24px;
         }
+        .translate-container {
+            display: flex;
+            justify-content: flex-end;
+            margin-bottom: 16px;
+        }
+        .translate-container #google_translate_element {
+            margin: 0;
+        }
         .section-card {
             background: #ffffff;
             border-radius: 20px;
@@ -227,6 +235,9 @@
     </style>
 </head>
 <body>
+<div class="translate-container">
+    <jsp:include page="../common/googleTranslateWidget.jspf" />
+</div>
 <jsp:include page="studentDashboardHeader.jsp" />
 
 <c:set var="totalResources" value="0" />

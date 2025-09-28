@@ -2,6 +2,7 @@
 <%@ page language="java" contentType="text/html; charset=UTF-8" pageEncoding="UTF-8" %>
 <%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
 <%@ taglib prefix="fmt" uri="http://java.sun.com/jsp/jstl/fmt" %>
+<%@ taglib prefix="fn" uri="http://java.sun.com/jsp/jstl/functions" %>
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -10,61 +11,72 @@
     <jsp:include page="../common/bootstrap.jsp" />
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css">
     <style>
-        body { background: #f8fafc; }
-        .page-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 24px; }
-        .page-header h2 { margin: 0; font-weight: 700; color: #1e293b; }
-        .page-header p { margin: 0; color: #64748b; }
-        .action-buttons { display: flex; gap: 12px; flex-wrap: wrap; justify-content: flex-end; }
-        .resource-list .list-group-item { border-radius: 12px; border: 1px solid #e2e8f0; margin-bottom: 12px; }
-        .resource-list .list-group-item:hover { border-color: #2563eb; box-shadow: 0 12px 22px rgba(37, 99, 235, 0.12); }
-        .resource-title { font-weight: 600; font-size: 1.05rem; color: #0f172a; }
-        .resource-meta { font-size: 0.85rem; color: #475569; display: flex; gap: 16px; flex-wrap: wrap; margin-top: 8px; }
-        .resource-meta .badge { font-size: 0.75rem; letter-spacing: 0.06em; text-transform: uppercase; }
-        .resource-actions { display: flex; gap: 8px; flex-wrap: wrap; }
-        .empty-state { background: #e0f2fe; border-radius: 16px; padding: 36px; text-align: center; color: #0f172a; }
-        .empty-state h4 { font-weight: 700; margin-bottom: 12px; }
+        body { background: #f1f5f9; }
+        .hero-card {
+            background: linear-gradient(135deg, rgba(37,99,235,0.12), rgba(109,40,217,0.12));
+            border-radius: 24px;
+            padding: 2.5rem;
+            box-shadow: 0 2rem 4rem rgba(30,64,175,0.12);
+        }
+        .resource-card {
+            border: none;
+            border-radius: 20px;
+            box-shadow: 0 1.5rem 3rem rgba(15,23,42,0.08);
+            transition: transform .2s ease, box-shadow .2s ease;
+        }
+        .resource-card:hover {
+            transform: translateY(-6px);
+            box-shadow: 0 2.5rem 3.5rem rgba(109,40,217,0.16);
+        }
     </style>
 </head>
 <body>
-<jsp:include page="../common/googleTranslateWidget.jspf" />
-<div class="container py-4">
+<div style="display:none"><jsp:include page="../common/googleTranslateWidget.jspf" /></div>
+<div class="container py-5">
     <c:set var="currentStreamId" value="${not empty selectedStream ? selectedStream : formStreamId}" />
 
-    <div class="page-header">
-        <div>
-            <h2 class="mb-1">${selectedSubject}</h2>
-            <p class="mb-0">Resources for ${selectedGradeName}<c:if test="${not empty selectedStreamName}"> · ${selectedStreamName} Stream</c:if></p>
-        </div>
-        <div class="action-buttons">
-            <c:url var="subjectsUrl" value="/teacher/library">
-                <c:param name="grade" value="${selectedGrade}" />
-                <c:if test="${not empty currentStreamId}">
-                    <c:param name="stream" value="${currentStreamId}" />
-                </c:if>
-            </c:url>
-            <a href="${subjectsUrl}" class="btn btn-outline-secondary"><i class="bi bi-arrow-left"></i> Subjects</a>
+    <div class="hero-card mb-5">
+        <div class="d-flex flex-column flex-xl-row align-items-xl-center justify-content-between gap-4">
+            <div>
+                <span class="badge text-bg-primary rounded-pill mb-2">${selectedGradeName}</span>
+                <h1 class="h3 fw-bold text-primary mb-1">${selectedSubject}</h1>
+                <p class="text-muted mb-0">Keep your ${selectedSubject} resources up to date for every student<c:if test="${not empty selectedStreamName}"> in the ${selectedStreamName} stream</c:if>.</p>
+            </div>
+            <div class="text-xl-end">
+                <span class="display-6 fw-bold text-primary">${fn:length(resources)}</span>
+                <p class="text-muted mb-0">Resources published</p>
+                <div class="d-flex flex-wrap gap-2 justify-content-xl-end mt-3">
+                    <c:url var="subjectsUrl" value="/teacher/library">
+                        <c:param name="grade" value="${selectedGrade}" />
+                        <c:if test="${not empty currentStreamId}">
+                            <c:param name="stream" value="${currentStreamId}" />
+                        </c:if>
+                    </c:url>
+                    <a href="${subjectsUrl}" class="btn btn-outline-secondary"><i class="bi bi-arrow-left me-1"></i>Subjects</a>
 
-            <c:if test="${not empty streams}">
-                <c:url var="streamSelectUrl" value="/teacher/library">
-                    <c:param name="grade" value="${selectedGrade}" />
-                </c:url>
-                <a href="${streamSelectUrl}" class="btn btn-outline-secondary"><i class="bi bi-layers"></i> Change Stream</a>
-            </c:if>
+                    <c:if test="${not empty streams}">
+                        <c:url var="streamSelectUrl" value="/teacher/library">
+                            <c:param name="grade" value="${selectedGrade}" />
+                        </c:url>
+                        <a href="${streamSelectUrl}" class="btn btn-outline-secondary"><i class="bi bi-layers me-1"></i>Change stream</a>
+                    </c:if>
 
-            <c:url var="classesUrl" value="/teacher/library" />
-            <a href="${classesUrl}" class="btn btn-outline-secondary">Classes</a>
-            <button class="btn btn-primary" type="button" data-bs-toggle="modal" data-bs-target="#uploadModal">
-                <i class="bi bi-plus-lg"></i> Add Resource
-            </button>
+                    <c:url var="classesUrl" value="/teacher/library" />
+                    <a href="${classesUrl}" class="btn btn-outline-secondary"><i class="bi bi-grid"></i> Classes</a>
+                    <button class="btn btn-primary" type="button" data-bs-toggle="modal" data-bs-target="#uploadModal">
+                        <i class="bi bi-plus-lg"></i> Add resource
+                    </button>
+                </div>
+            </div>
         </div>
     </div>
 
     <c:if test="${not empty message}">
-        <div class="alert alert-${messageType}">${message}</div>
+        <div class="alert alert-${messageType} shadow-sm mb-4">${message}</div>
     </c:if>
 
     <c:if test="${not empty streams}">
-        <div class="mb-3">
+        <div class="mb-4">
             <span class="text-muted d-block mb-2">Streams</span>
             <div class="d-flex flex-wrap gap-2">
                 <c:forEach var="entry" items="${streams}">
@@ -102,40 +114,45 @@
 
     <c:choose>
         <c:when test="${not empty resources}">
-            <div class="list-group resource-list">
+            <div class="row g-4">
                 <c:forEach var="resource" items="${resources}">
-                    <div class="list-group-item">
-                        <div class="d-flex flex-column flex-md-row justify-content-between gap-3">
-                            <div>
-                                <div class="resource-title">${resource.title}</div>
-                                <div class="resource-meta">
-                                    <span class="badge bg-primary">${resource.type}</span>
-                                    <span><i class="bi bi-translate"></i> ${resource.language}</span>
-                                    <c:if test="${not empty resource.createdAt}">
-                                        <span><i class="bi bi-clock-history"></i> <fmt:formatDate value="${resource.createdAt}" pattern="dd MMM yyyy" /></span>
-                                    </c:if>
+                    <div class="col-12 col-md-6">
+                        <div class="card resource-card h-100">
+                            <div class="card-body d-flex flex-column gap-3">
+                                <div class="d-flex justify-content-between align-items-start">
+                                    <div>
+                                        <span class="badge text-bg-light text-primary small mb-2">${resource.type}</span>
+                                        <h2 class="h5 fw-semibold text-dark mb-1">${resource.title}</h2>
+                                        <div class="text-muted small d-flex flex-wrap gap-3">
+                                            <span><i class="bi bi-translate me-1"></i>${resource.language}</span>
+                                            <c:if test="${not empty resource.createdAt}">
+                                                <span><i class="bi bi-clock-history me-1"></i><fmt:formatDate value="${resource.createdAt}" pattern="dd MMM yyyy" /></span>
+                                            </c:if>
+                                        </div>
+                                    </div>
+                                    <span class="text-muted"><i class="bi bi-three-dots"></i></span>
                                 </div>
-                            </div>
-                            <div class="resource-actions">
-                                <c:url var="viewUrl" value="/view-resource">
-                                    <c:param name="id" value="${resource.id}" />
-                                </c:url>
-                                <a href="${viewUrl}" class="btn btn-outline-primary btn-sm" target="_blank">View</a>
+                                <div class="d-flex flex-wrap gap-2 mt-auto">
+                                    <c:url var="viewUrl" value="/view-resource">
+                                        <c:param name="id" value="${resource.id}" />
+                                    </c:url>
+                                    <a href="${viewUrl}" class="btn btn-outline-primary btn-sm" target="_blank"><i class="bi bi-eye me-1"></i>View</a>
 
-                                <c:url var="downloadUrl" value="/download-resource">
-                                    <c:param name="id" value="${resource.id}" />
-                                </c:url>
-                                <a href="${downloadUrl}" class="btn btn-outline-success btn-sm">Download</a>
+                                    <c:url var="downloadUrl" value="/download-resource">
+                                        <c:param name="id" value="${resource.id}" />
+                                    </c:url>
+                                    <a href="${downloadUrl}" class="btn btn-outline-success btn-sm"><i class="bi bi-download me-1"></i>Download</a>
 
-                                <c:url var="editUrl" value="/edit-resource">
-                                    <c:param name="id" value="${resource.id}" />
-                                </c:url>
-                                <a href="${editUrl}" class="btn btn-outline-secondary btn-sm">Edit</a>
+                                    <c:url var="editUrl" value="/edit-resource">
+                                        <c:param name="id" value="${resource.id}" />
+                                    </c:url>
+                                    <a href="${editUrl}" class="btn btn-outline-secondary btn-sm"><i class="bi bi-pencil me-1"></i>Edit</a>
 
-                                <c:url var="deleteUrl" value="/delete-resource">
-                                    <c:param name="id" value="${resource.id}" />
-                                </c:url>
-                                <a href="${deleteUrl}" class="btn btn-outline-danger btn-sm" onclick="return confirm('Delete this resource?');">Delete</a>
+                                    <c:url var="deleteUrl" value="/delete-resource">
+                                        <c:param name="id" value="${resource.id}" />
+                                    </c:url>
+                                    <a href="${deleteUrl}" class="btn btn-outline-danger btn-sm" onclick="return confirm('Delete this resource?');"><i class="bi bi-trash me-1"></i>Delete</a>
+                                </div>
                             </div>
                         </div>
                     </div>
@@ -143,12 +160,17 @@
             </div>
         </c:when>
         <c:otherwise>
-            <div class="empty-state">
-                <h4>No resources yet for ${selectedSubject}</h4>
-                <p class="mb-3">Be the first to share materials for this subject.</p>
-                <button class="btn btn-primary" type="button" data-bs-toggle="modal" data-bs-target="#uploadModal">
-                    <i class="bi bi-plus-lg"></i> Add Resource
-                </button>
+            <div class="card border-0 shadow-sm rounded-4">
+                <div class="card-body text-center py-5">
+                    <div class="mb-3">
+                        <span class="badge text-bg-info text-uppercase">Empty state</span>
+                    </div>
+                    <h3 class="fw-bold mb-3">No resources yet for ${selectedSubject}</h3>
+                    <p class="text-muted mb-4">Be the first to share slides, worksheets, or videos to kick-start this subject.</p>
+                    <button class="btn btn-primary" type="button" data-bs-toggle="modal" data-bs-target="#uploadModal">
+                        <i class="bi bi-plus-lg me-1"></i>Add resource
+                    </button>
+                </div>
             </div>
         </c:otherwise>
     </c:choose>
@@ -235,6 +257,7 @@
 
         <c:if test="${showUploadModal}">
             const uploadModalEl = document.getElementById('uploadModal');
+<jsp:include page="../common/i18n-scripts.jspf" />
             if (uploadModalEl) {
                 const modal = new bootstrap.Modal(uploadModalEl);
                 modal.show();

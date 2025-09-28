@@ -4,7 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <title>Login - Education Hub</title>
-    <link rel="stylesheet" href="../common/bootstrap.jsp">
+    <jsp:include page="../common/bootstrap.jsp" />
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
     <style>
         body {

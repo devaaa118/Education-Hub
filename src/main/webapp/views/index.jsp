@@ -5,7 +5,7 @@
 <head>
     <meta charset="UTF-8">
     <title>Education Hub - Home</title>
-    <link rel="stylesheet" href="common/bootstrap.jsp">
+    <jsp:include page="../common/bootstrap.jsp" />
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
     <style>
         body { background: linear-gradient(120deg, #f8fafc 0%, #e0e7ff 100%); min-height: 100vh; }

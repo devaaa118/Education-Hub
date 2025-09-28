@@ -111,6 +111,7 @@
                                     <th>Questions</th>
                                     <th>Attempts</th>
                                     <th>Created</th>
+                                    <th>Actions</th>
                                 </tr>
                                 </thead>
                                 <tbody>
@@ -127,6 +128,12 @@
                                         <td>${quiz.questionCount}</td>
                                         <td>${quiz.attemptCount}</td>
                                         <td><fmt:formatDate value="${quiz.createdAt}" pattern="dd MMM yyyy" /></td>
+                                        <td>
+                                            <c:url var="resultsUrl" value="/teacher/quiz/results">
+                                                <c:param name="id" value="${quiz.id}" />
+                                            </c:url>
+                                            <a href="${resultsUrl}" class="btn btn-outline-primary btn-sm ${quiz.attemptCount == 0 ? 'disabled' : ''}"<c:if test="${quiz.attemptCount == 0}"> aria-disabled="true" tabindex="-1"</c:if>>View results</a>
+                                        </td>
                                     </tr>
                                 </c:forEach>
                                 </tbody>
@@ -237,5 +244,6 @@
         addQuestionBtn.click();
     })();
 </script>
+<jsp:include page="../common/i18n-scripts.jspf" />
 </body>
 </html>

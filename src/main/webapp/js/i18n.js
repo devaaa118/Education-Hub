@@ -51,6 +51,54 @@
         }
     };
 
+    const GOOGLE_TRANSLATE_MAP = {
+        en: '',
+        ta: 'ta'
+    };
+    const GOOGLE_TRANSLATE_REVERSE_MAP = {
+        '': 'en',
+        en: 'en',
+        ta: 'ta'
+    };
+    let suppressLanguageChange = false;
+
+    const dispatchComboChange = (combo) => {
+        const event = document.createEvent('HTMLEvents');
+        event.initEvent('change', true, true);
+        combo.dispatchEvent(event);
+    };
+
+    const triggerGoogleTranslate = (lang, attempt = 0) => {
+        window.__preferredLanguage = lang;
+        const targetValue = GOOGLE_TRANSLATE_MAP[lang] !== undefined ? GOOGLE_TRANSLATE_MAP[lang] : '';
+        const combo = document.querySelector('.language-switcher.goog-te-combo') || document.querySelector('.goog-te-combo');
+        if (!combo) {
+            if (attempt < 60) {
+                setTimeout(() => triggerGoogleTranslate(lang, attempt + 1), 250);
+            }
+            return;
+        }
+        suppressLanguageChange = true;
+        try {
+            if (combo.value !== targetValue) {
+                combo.value = targetValue;
+            }
+            try {
+                dispatchComboChange(combo);
+            } catch (err) {
+                combo.dispatchEvent(new Event('change', { bubbles: true }));
+            }
+        } finally {
+            setTimeout(() => {
+                suppressLanguageChange = false;
+            }, 150);
+        }
+    };
+
+    window.applyGoogleTranslateLanguage = (lang) => {
+        triggerGoogleTranslate(lang);
+    };
+
     const parseOptions = (attrValue) => {
         if (!attrValue) return {};
         try {
@@ -92,6 +140,45 @@
         el.setAttribute(attributeName, i18next.t(attrKey, options));
     };
 
+    const setupLanguageSwitcher = (select) => {
+        if (!select) return;
+        if (!select.classList.contains('language-switcher')) {
+            select.classList.add('language-switcher');
+        }
+        if (!select.dataset.initialized) {
+            select.addEventListener('change', (event) => {
+                const rawValue = event.target.value;
+                const lang = GOOGLE_TRANSLATE_REVERSE_MAP.hasOwnProperty(rawValue)
+                    ? GOOGLE_TRANSLATE_REVERSE_MAP[rawValue]
+                    : rawValue;
+                if (!SUPPORTED_LANGS.includes(lang)) return;
+                if (suppressLanguageChange && lang === (i18next.language || DEFAULT_LANG)) {
+                    return;
+                }
+                persistLanguage(lang);
+                ensureUrlHasLang(lang);
+                if (i18next.language === lang) {
+                    triggerGoogleTranslate(lang);
+                    return;
+                }
+                i18next.changeLanguage(lang).then(() => {
+                    triggerGoogleTranslate(lang);
+                });
+            });
+            select.dataset.initialized = 'true';
+        }
+        const mappedValue = GOOGLE_TRANSLATE_MAP[i18next.language] !== undefined
+            ? GOOGLE_TRANSLATE_MAP[i18next.language]
+            : i18next.language;
+        if (select.value !== mappedValue) {
+            suppressLanguageChange = true;
+            select.value = mappedValue;
+            setTimeout(() => {
+                suppressLanguageChange = false;
+            }, 100);
+        }
+    };
+
     const updateTranslations = () => {
         document.documentElement.setAttribute('lang', i18next.language || DEFAULT_LANG);
         document.querySelectorAll('[data-i18n]').forEach(translateElement);
@@ -113,21 +200,7 @@
             translateElement(titleEl);
             document.title = titleEl.textContent;
         }
-        document.querySelectorAll('.language-switcher').forEach((select) => {
-            if (!select.dataset.initialized) {
-                select.addEventListener('change', (event) => {
-                    const lang = event.target.value;
-                    if (!SUPPORTED_LANGS.includes(lang)) return;
-                    persistLanguage(lang);
-                    ensureUrlHasLang(lang);
-                    const params = new URLSearchParams(window.location.search);
-                    params.set(LANG_QUERY_PARAM, lang);
-                    window.location.search = params.toString();
-                });
-                select.dataset.initialized = 'true';
-            }
-            select.value = i18next.language;
-        });
+        document.querySelectorAll('.language-switcher').forEach(setupLanguageSwitcher);
         document.querySelectorAll('form').forEach((form) => {
             if (form.dataset.langAugmented === 'true') {
                 const hidden = form.querySelector(`input[name="${LANG_QUERY_PARAM}"]`);
@@ -141,6 +214,7 @@
             form.appendChild(hiddenInput);
             form.dataset.langAugmented = 'true';
         });
+        triggerGoogleTranslate(i18next.language || DEFAULT_LANG);
     };
 
     const interceptAnchorNavigation = () => {
@@ -166,6 +240,7 @@
         const lang = resolveInitialLanguage();
         persistLanguage(lang);
         ensureUrlHasLang(lang);
+        window.__preferredLanguage = lang;
         interceptAnchorNavigation();
         i18next
             .use(i18nextHttpBackend)
@@ -187,9 +262,33 @@
                     console.error('i18next init failed', err);
                 }
                 updateTranslations();
+                triggerGoogleTranslate(i18next.language || DEFAULT_LANG);
             });
         i18next.on('languageChanged', () => {
             updateTranslations();
         });
     });
+
+    const reapplyPreferredLanguage = () => {
+        const activeLang = i18next && i18next.language ? i18next.language : resolveInitialLanguage();
+        triggerGoogleTranslate(activeLang || DEFAULT_LANG);
+    };
+
+    if (typeof window !== 'undefined') {
+        window.addEventListener('googleTranslateReady', () => {
+            reapplyPreferredLanguage();
+        });
+        window.addEventListener('languageSwitcherRendered', (event) => {
+            const select = event && event.detail && event.detail.select;
+            if (select) {
+                setupLanguageSwitcher(select);
+                updateTranslations();
+            }
+        });
+        if (window.googleTranslateReady) {
+            setTimeout(() => {
+                reapplyPreferredLanguage();
+            }, 0);
+        }
+    }
 })();

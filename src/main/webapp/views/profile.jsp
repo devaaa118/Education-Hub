@@ -1,41 +1,76 @@
 <%@ page contentType="text/html;charset=UTF-8" language="java" %>
 <%@ page import="com.edu.model.User" %>
-<%@ include file="studentDashboardHeader.jsp" %>
 <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
     <title>My Profile - Education Hub</title>
     <jsp:include page="../common/bootstrap.jsp" />
+    <jsp:include page="../common/i18n-scripts.jspf" />
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
     <style>
-        body { background: linear-gradient(120deg, #f8fafc 0%, #e0e7ff 100%); min-height: 100vh; }
-        .profile-container { max-width: 600px; margin: 48px auto; background: #fff; border-radius: 16px; box-shadow: 0 6px 32px rgba(30,64,175,0.10); padding: 40px 32px; }
-        .profile-info { font-size: 1.15rem; color: #334155; line-height: 2.1; }
-        .profile-label { font-weight: 700; color: #2563eb; }
-        .btn-back { margin-top: 32px; font-weight: 600; color: #2563eb; font-size: 1.08rem; }
+        body {
+            background: linear-gradient(135deg, #f8fafc 0%, #e0e7ff 100%);
+            min-height: 100vh;
+        }
+        .profile-card {
+            border: none;
+            border-radius: 1.5rem;
+            box-shadow: 0 1.75rem 3.5rem rgba(30, 64, 175, 0.12);
+        }
+        .profile-card .card-title {
+            font-size: 2rem;
+            font-weight: 800;
+            color: #1d4ed8;
+        }
+        .profile-label {
+            color: #1e40af;
+            font-weight: 700;
+        }
     </style>
 </head>
-<body>
-<jsp:include page="../common/googleTranslateWidget.jspf" />
+<body class="bg-light">
+<div style="display:none"><jsp:include page="../common/googleTranslateWidget.jspf" /></div>
 <%
     User user = (User) session.getAttribute("user");
 %>
-<div class="profile-container" style="margin-top:0;">
-    <div class="welcome-box" style="background:#e0e7ff;border-radius:10px;padding:28px 24px;margin-bottom:24px;font-size:1.15rem;color:#334155;box-shadow:0 2px 8px rgba(37,99,235,0.07);display:flex;align-items:center;gap:18px;">
-        <i class="fa-solid fa-user-circle" style="font-size:2.2rem;color:#2563eb;"></i>
-        <div>
-            <div style="font-size:2rem;font-weight:800;color:#2563eb;">My Profile</div>
-            <div class="profile-info" style="font-size:1.15rem;color:#334155;line-height:2.1;">
-                <p><span class="profile-label" style="font-weight:700;color:#2563eb;">Full Name:</span> <span style="color:#222;font-weight:500;"> <%= user != null ? user.getName() : "-" %></span></p>
-                <p><span class="profile-label" style="font-weight:700;color:#2563eb;">Username:</span> <span style="color:#222;font-weight:500;"> <%= user != null ? user.getUsername() : "-" %></span></p>
-                <p><span class="profile-label" style="font-weight:700;color:#2563eb;">Email:</span> <span style="color:#222;font-weight:500;"> <%= user != null ? user.getEmail() : "-" %></span></p>
-                <p><span class="profile-label" style="font-weight:700;color:#2563eb;">Role:</span> <span style="color:#222;font-weight:500;"> <%= user != null ? user.getRole() : "-" %></span></p>
-                <p><span class="profile-label" style="font-weight:700;color:#2563eb;">Member Since:</span> <span style="color:#222;font-weight:500;"> <%= user != null && user.getCreatedAt() != null ? new java.text.SimpleDateFormat("yyyy-MM-dd").format(user.getCreatedAt()) : "-" %></span></p>
+<div class="container py-5">
+    <jsp:include page="studentDashboardHeader.jsp" />
+
+    <div class="row justify-content-center">
+        <div class="col-12 col-lg-8">
+            <div class="card profile-card p-4 p-lg-5">
+                <div class="d-flex align-items-center gap-3 mb-4">
+                    <span class="display-4 text-primary"><i class="fa-solid fa-user-circle"></i></span>
+                    <div>
+                        <h1 class="card-title mb-0" data-i18n="profile.title">My profile</h1>
+                        <p class="text-muted mb-0" data-i18n="profile.subtitle">Your personal details at a glance.</p>
+                    </div>
+                </div>
+                <dl class="row g-3">
+                    <dt class="col-sm-4 profile-label" data-i18n="profile.fullName">Full name</dt>
+                    <dd class="col-sm-8 fw-semibold"><%= user != null ? user.getName() : "-" %></dd>
+
+                    <dt class="col-sm-4 profile-label" data-i18n="profile.username">Username</dt>
+                    <dd class="col-sm-8 fw-semibold"><%= user != null ? user.getUsername() : "-" %></dd>
+
+                    <dt class="col-sm-4 profile-label" data-i18n="profile.email">Email</dt>
+                    <dd class="col-sm-8 fw-semibold"><%= user != null ? user.getEmail() : "-" %></dd>
+
+                    <dt class="col-sm-4 profile-label" data-i18n="profile.role">Role</dt>
+                    <dd class="col-sm-8 fw-semibold text-capitalize"><%= user != null ? user.getRole() : "-" %></dd>
+
+                    <dt class="col-sm-4 profile-label" data-i18n="profile.memberSince">Member since</dt>
+                    <dd class="col-sm-8 fw-semibold">
+                        <%= user != null && user.getCreatedAt() != null ? new java.text.SimpleDateFormat("dd MMM yyyy").format(user.getCreatedAt()) : "-" %>
+                    </dd>
+                </dl>
+                <div class="d-flex justify-content-end gap-3 mt-4">
+                    <a href="<%= request.getContextPath() %>/studentDashboard" class="btn btn-outline-primary" data-i18n="profile.back"><i class="fa-solid fa-arrow-left me-2"></i>Back to dashboard</a>
+                </div>
             </div>
         </div>
     </div>
-    <a href="<%= request.getContextPath() %>/studentDashboard" class="btn btn-link btn-back" style="margin-top:32px;font-weight:600;color:#2563eb;font-size:1.08rem;">Back to Dashboard</a>
 </div>
 </body>
 </html>

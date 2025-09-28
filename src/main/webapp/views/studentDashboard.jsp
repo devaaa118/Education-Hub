@@ -26,7 +26,7 @@
             justify-content: flex-end;
             margin-bottom: 16px;
         }
-        .translate-container #google_translate_element {
+        .translate-container #google_translate_container {
             margin: 0;
         }
         .section-card {

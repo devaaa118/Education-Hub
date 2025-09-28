@@ -29,6 +29,17 @@ public class TeacherQuizServlet extends HttpServlet {
             return;
         }
 
+        String error = request.getParameter("error");
+        if (error != null) {
+            if ("invalidQuiz".equals(error)) {
+                request.setAttribute("message", "We couldn't identify that quiz. Please try again.");
+                request.setAttribute("messageType", "danger");
+            } else if ("missingQuiz".equals(error)) {
+                request.setAttribute("message", "That quiz isn't available anymore or doesn't belong to you.");
+                request.setAttribute("messageType", "warning");
+            }
+        }
+
         QuizDAO quizDAO = new QuizDAO();
         resourceDAO resourceDao = new resourceDAO();
         List<Quiz> quizzes = quizDAO.getQuizzesByTeacher(user.getId());

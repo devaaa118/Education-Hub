@@ -4,16 +4,18 @@ package com.edu.controller;
 import com.edu.dao.resourceDAO;
 import com.edu.model.Resource;
 import com.edu.model.User;
+import com.edu.util.FileStorageUtil;
 
 import jakarta.servlet.ServletException;
 import jakarta.servlet.annotation.WebServlet;
 import jakarta.servlet.http.HttpServlet;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
-import java.io.File;
-import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.OutputStream;
+import java.io.InputStream;
+import java.nio.file.Files;
+import java.nio.file.Path;
 
 @WebServlet("/download-resource")
 public class DownloadResourceServlet extends HttpServlet {
@@ -51,26 +53,26 @@ public class DownloadResourceServlet extends HttpServlet {
             response.sendError(HttpServletResponse.SC_NOT_FOUND, "Resource not found");
             return;
         }
+
+        String fileLink = resource.getFileLink();
+        if (fileLink == null || fileLink.isEmpty()) {
+            response.sendError(HttpServletResponse.SC_NOT_FOUND, "Resource file not available");
+            return;
+        }
+
+        if (isExternalLink(fileLink)) {
+            response.sendRedirect(fileLink);
+            return;
+        }
         
-        // Get the file path
-    // Line 60 in DownloadResourceServlet.java
-String filePath;
-if (resource.getFileLink().startsWith("uploads/")) {
-    // New format (using WildFly data directory)
-    filePath = System.getProperty("jboss.server.data.dir") + "/" + resource.getFileLink();
-} else {
-    // Old format (using web app directory)
-    filePath = getServletContext().getRealPath("") + File.separator + resource.getFileLink();
-}
-  File file = new File(filePath);
-        
-        if (!file.exists()) {
+        Path filePath = FileStorageUtil.resolveAbsolutePath(resource.getFileLink(), getServletContext());
+        if (filePath == null || !Files.exists(filePath)) {
             response.sendError(HttpServletResponse.SC_NOT_FOUND, "File not found");
             return;
         }
         
         // Set response headers
-        String fileName = resource.getFileLink().substring(resource.getFileLink().lastIndexOf('/') + 1);
+        String fileName = filePath.getFileName().toString();
         String contentType;
         
         if (resource.getType().equals("PDF")) {
@@ -82,11 +84,11 @@ if (resource.getFileLink().startsWith("uploads/")) {
         }
         
         response.setContentType(contentType);
-        response.setContentLength((int) file.length());
+        response.setContentLengthLong(Files.size(filePath));
         response.setHeader("Content-Disposition", "attachment; filename=\"" + fileName + "\"");
         
         // Stream the file to the client
-        try (FileInputStream in = new FileInputStream(file);
+        try (InputStream in = Files.newInputStream(filePath);
              OutputStream out = response.getOutputStream()) {
             
             byte[] buffer = new byte[4096];
@@ -96,5 +98,10 @@ if (resource.getFileLink().startsWith("uploads/")) {
                 out.write(buffer, 0, bytesRead);
             }
         }
+    }
+
+    private boolean isExternalLink(String fileLink) {
+        String lower = fileLink.toLowerCase();
+        return lower.startsWith("http://") || lower.startsWith("https://");
     }
 }

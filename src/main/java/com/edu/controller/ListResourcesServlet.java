@@ -33,23 +33,12 @@ public class ListResourcesServlet extends HttpServlet {
     String language = request.getParameter("language");
     String stream = request.getParameter("stream");
 
-        List<Resource> resources;
-        // Only treat as filter if at least one filter is non-empty (not just present)
-        boolean filterApplied = false;
-        // If all params are present but all are empty, treat as no filter
-        boolean allParamsPresent = (search != null && grade != null && subject != null && type != null && language != null);
-        boolean allParamsEmpty = (search != null && search.isEmpty()) && (grade != null && grade.isEmpty()) && (subject != null && subject.isEmpty()) && (type != null && type.isEmpty()) && (language != null && language.isEmpty());
-        if (!allParamsPresent || !allParamsEmpty) {
-            if ((search != null && !search.isEmpty()) ||
+        boolean filterApplied = (search != null && !search.isEmpty()) ||
                 (grade != null && !grade.isEmpty()) ||
-                (subject != null && !subject.isEmpty()) ||
                 (type != null && !type.isEmpty()) ||
-                (language != null && !language.isEmpty())) {
-                filterApplied = true;
-            }
-        }
+                (language != null && !language.isEmpty()) ||
+                (stream != null && !stream.isEmpty());
 
-        // Get user's class/grade from session (assume user.getGrade() exists or adapt as needed)
         String userGrade = null;
         try {
             java.lang.reflect.Method getGradeMethod = user.getClass().getMethod("getGrade");
@@ -59,31 +48,32 @@ public class ListResourcesServlet extends HttpServlet {
             userGrade = null;
         }
 
-        if (filterApplied) {
-            // If grade filter is set to 'All' (empty), show all resources
-            if (grade != null && grade.isEmpty()) {
-                resources = resourceDAO.getAllResources();
-            } else {
-                resources = resourceDAO.getFilteredResources(grade, subject, type, language, stream);
-            }
-            if (search != null && !search.isEmpty()) {
-                String searchLower = search.toLowerCase();
-                resources.removeIf(r -> !(r.getTitle().toLowerCase().contains(searchLower)
-                        || r.getSubject().toLowerCase().contains(searchLower)));
-            }
-        } else {
-            // No filter: show only resources for the user's class
-            resources = resourceDAO.getResourcesForStudent(user.getId());
+        if (!filterApplied) {
+            grade = userGrade;
+            stream = null;
         }
 
-        // For dropdowns, mark user's class
         List<String> grades = resourceDAO.getUniqueGrades();
         request.setAttribute("grades", grades);
         request.setAttribute("userGrade", userGrade);
-        request.setAttribute("subjects", resourceDAO.getUniqueSubjects());
-        request.setAttribute("resources", resources);
 
-        // Streams dropdown: only for grade 11 or 12
+        List<String> subjectsForDisplay;
+        if (grade != null && !grade.isEmpty()) {
+            subjectsForDisplay = resourceDAO.getSubjectsForGrade(grade, stream);
+        } else {
+            subjectsForDisplay = resourceDAO.getUniqueSubjects();
+        }
+        request.setAttribute("subjects", subjectsForDisplay);
+
+        List<Resource> flatResources = resourceDAO.getFilteredResources(grade, subject, type, language, stream);
+        if (search != null && !search.isEmpty()) {
+            String searchLower = search.toLowerCase();
+            flatResources.removeIf(r -> !(r.getTitle().toLowerCase().contains(searchLower)
+                    || r.getSubject().toLowerCase().contains(searchLower)));
+        }
+
+        request.setAttribute("resources", flatResources);
+
         List<String> streams = null;
         try {
             int gradeInt = (grade != null && !grade.isEmpty()) ? Integer.parseInt(grade) : -1;

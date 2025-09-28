@@ -24,7 +24,7 @@ public class DashboardServlet extends HttpServlet {
         // Check if user is logged in
         User user = (User) request.getSession().getAttribute("user");
         if (user == null) {
-response.sendRedirect(request.getContextPath() + "/views/teacherLogin.jsp");
+            response.sendRedirect(request.getContextPath() + "/views/commonLogin.jsp");
             return;
         }
         

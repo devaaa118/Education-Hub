@@ -28,7 +28,8 @@
             margin-bottom: 25px;
         }
         .brand img {
-            width: 60px;
+            width: 120px;
+            max-width: 100%;
             margin-bottom: 8px;
         }
         .brand-title {
@@ -180,6 +181,7 @@
     </style>
 </head>
 <body>
+<jsp:include page="../common/googleTranslateWidget.jspf" />
 <%
 String errorMessage = request.getParameter("error");
 if (errorMessage == null) {
@@ -190,8 +192,8 @@ String successMessage = request.getParameter("success");
 
 <!-- Branding outside the box -->
 <div class="brand">
-    <img src="../public/vite.svg" alt="Education Hub">
-    <div class="brand-title">Education Hub</div>
+           <img src="<%= request.getContextPath() %>/resources/image.png" alt="Education Hub Logo" style="width:280px;max-width:100%;margin-bottom:8px;">
+
     <div class="brand-subtitle">Empowering <b>Education</b> for All</div>
 </div>
 

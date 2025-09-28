@@ -1,8 +1,10 @@
 // File: src/main/java/com/edu/controller/ViewResourceServlet.java
 package com.edu.controller;
 
+import com.edu.dao.ResourceProgressDAO;
 import com.edu.dao.resourceDAO;
 import com.edu.model.Resource;
+import com.edu.model.ResourceProgress;
 import com.edu.model.User;
 
 import jakarta.servlet.ServletException;
@@ -49,6 +51,24 @@ public class ViewResourceServlet extends HttpServlet {
             return;
         }
         
+        if ("student".equalsIgnoreCase(user.getRole())) {
+            ResourceProgressDAO progressDAO = new ResourceProgressDAO();
+            ResourceProgress existingProgress = progressDAO.getProgress(user.getId(), resourceId);
+            String statusToPersist = "IN_PROGRESS";
+            String notesToPersist = null;
+            if (existingProgress != null) {
+                notesToPersist = existingProgress.getNotes();
+                if (existingProgress.getStatus() != null) {
+                    if ("COMPLETED".equalsIgnoreCase(existingProgress.getStatus())) {
+                        statusToPersist = "COMPLETED";
+                    } else if (!"NOT_STARTED".equalsIgnoreCase(existingProgress.getStatus())) {
+                        statusToPersist = existingProgress.getStatus().toUpperCase();
+                    }
+                }
+            }
+            progressDAO.upsertProgress(user.getId(), resourceId, statusToPersist, notesToPersist, true);
+        }
+
         // Set resource as request attribute
         request.setAttribute("resource", resource);
         

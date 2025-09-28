@@ -2,8 +2,10 @@
 package com.edu.controller;
 
 import com.edu.dao.resourceDAO;
+import com.edu.model.ClassInfo;
 import com.edu.model.Resource;
 import com.edu.model.User;
+import com.edu.util.FileStorageUtil;
 
 import jakarta.servlet.ServletException;
 import jakarta.servlet.annotation.MultipartConfig;
@@ -12,13 +14,10 @@ import jakarta.servlet.http.HttpServlet;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.servlet.http.Part;
-import java.io.File;
 import java.io.IOException;
-import java.io.InputStream;
-import java.nio.file.Files;
-import java.nio.file.Paths;
-import java.nio.file.StandardCopyOption;
-import java.util.UUID;
+import java.sql.Timestamp;
+import java.util.List;
+import java.util.Map;
 
 @WebServlet("/upload-resource")
 @MultipartConfig(
@@ -27,21 +26,21 @@ import java.util.UUID;
     maxRequestSize = 1024 * 1024 * 60     // 60MB
 )
 public class UploadResourceServlet extends HttpServlet {
-    
-  
-// To this
-private static final String UPLOAD_DIRECTORY = System.getProperty("jboss.server.data.dir") + "/uploads"; 
+
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response) 
             throws ServletException, IOException {
         // Check if user is logged in and is a teacher
         User user = (User) request.getSession().getAttribute("user");
-        if (user == null || !"teacher".equals(user.getRole())) {response.sendRedirect(request.getContextPath() + "/views/teacherLogin.jsp");
-
+        if (user == null || !"teacher".equalsIgnoreCase(user.getRole())) {
+            response.sendRedirect(request.getContextPath() + "/views/commonLogin.jsp");
             return;
         }
-        
-        // Forward to the upload form
+
+        resourceDAO dao = new resourceDAO();
+        List<ClassInfo> classes = dao.getAllClasses();
+        Map<Integer, List<String>> subjectsByClass = dao.getSubjectsByClass();
+        prepareFormData(request, classes, subjectsByClass);
         request.getRequestDispatcher("/views/uploadResource.jsp").forward(request, response);
     }
     
@@ -50,63 +49,107 @@ private static final String UPLOAD_DIRECTORY = System.getProperty("jboss.server.
             throws ServletException, IOException {
         // Check if user is logged in and is a teacher
         User user = (User) request.getSession().getAttribute("user");
-        if (user == null || !"teacher".equals(user.getRole())) {
-                response.sendRedirect(request.getContextPath() + "/views/teacherLogin.jsp");
+        if (user == null || !"teacher".equalsIgnoreCase(user.getRole())) {
+            response.sendRedirect(request.getContextPath() + "/views/commonLogin.jsp");
             return;
         }
-        
-        // Get form parameters
+
+        resourceDAO dao = new resourceDAO();
+        List<ClassInfo> classes = dao.getAllClasses();
+        Map<Integer, List<String>> subjectsByClass = dao.getSubjectsByClass();
+        prepareFormData(request, classes, subjectsByClass);
+
         String title = request.getParameter("title");
-        String grade = request.getParameter("grade");
-        String subject = request.getParameter("subject");
+        String grade = trimToNull(request.getParameter("grade"));
+        String subject = trimToNull(request.getParameter("subject"));
         String type = request.getParameter("type");
         String language = request.getParameter("language");
+        String resourceUrl = trimToNull(request.getParameter("resourceUrl"));
         
-        // Get the uploaded file
         Part filePart = request.getPart("resourceFile");
-        String fileName = getSubmittedFileName(filePart);
-        
-        // Validate file type based on the selected resource type
-        if (!isValidFileType(fileName, type)) {
-            request.setAttribute("message", "Invalid file type for the selected resource type.");
+        boolean hasFile = filePart != null && filePart.getSize() > 0;
+        boolean hasUrl = resourceUrl != null;
+
+        storeFormValues(request, title, grade, subject, type, language, resourceUrl);
+
+        Integer gradeId = null;
+        if (grade != null) {
+            try {
+                gradeId = Integer.valueOf(grade);
+            } catch (NumberFormatException ex) {
+                gradeId = null;
+            }
+        }
+
+        if (gradeId == null || !subjectsByClass.containsKey(gradeId)) {
+            request.setAttribute("message", "Please select a valid class before uploading.");
             request.setAttribute("messageType", "danger");
             request.getRequestDispatcher("/views/uploadResource.jsp").forward(request, response);
             return;
         }
-        
-        // Create upload directory if it doesn't exist
-        String uploadPath = UPLOAD_DIRECTORY;
-      File uploadDir = new File(uploadPath);
-        if (!uploadDir.exists()) {
-            uploadDir.mkdirs();
+
+        List<String> availableSubjects = subjectsByClass.get(gradeId);
+        if (subject == null || availableSubjects == null || !availableSubjects.contains(subject)) {
+            request.setAttribute("message", "Please select a valid subject before uploading.");
+            request.setAttribute("messageType", "danger");
+            request.getRequestDispatcher("/views/uploadResource.jsp").forward(request, response);
+            return;
         }
-        
-        // Generate a unique file name to prevent overwriting
-        String uniqueFileName = UUID.randomUUID().toString() + "_" + fileName;
-        String filePath = uploadPath + File.separator + uniqueFileName;
-        
-        // Save the file
-        try (InputStream input = filePart.getInputStream()) {
-            Files.copy(input, Paths.get(filePath), StandardCopyOption.REPLACE_EXISTING);
+
+        if (!hasFile && !hasUrl) {
+            request.setAttribute("message", "Please select a file or provide a resource URL.");
+            request.setAttribute("messageType", "danger");
+            request.getRequestDispatcher("/views/uploadResource.jsp").forward(request, response);
+            return;
         }
-        
-   // In the doPost method of UploadResourceServlet, update the resource creation:
-Resource resource = new Resource();
-resource.setTitle(title);
-resource.setGrade(grade);
-resource.setSubject(subject);
-resource.setType(type);
-resource.setLanguage(language);resource.setFileLink("uploads/" + uniqueFileName);
-resource.setUploadedBy(user.getId());  // Set the user ID as the uploader
+
+        String storedRelativePath = null;
+        if (hasFile) {
+            String fileName = getSubmittedFileName(filePart);
+            if (!isValidFileType(fileName, type)) {
+                request.setAttribute("message", "Invalid file type for the selected resource type.");
+                request.setAttribute("messageType", "danger");
+                request.getRequestDispatcher("/views/uploadResource.jsp").forward(request, response);
+                return;
+            }
+
+            try {
+                storedRelativePath = FileStorageUtil.storeFile(filePart, fileName, getServletContext());
+            } catch (IOException e) {
+                request.setAttribute("message", "Failed to save file. Please try again.");
+                request.setAttribute("messageType", "danger");
+                request.getRequestDispatcher("/views/uploadResource.jsp").forward(request, response);
+                return;
+            }
+        }
+
+        if (!hasFile && hasUrl && !isValidUrl(resourceUrl)) {
+            request.setAttribute("message", "Please provide a valid URL (must start with http or https).");
+            request.setAttribute("messageType", "danger");
+            request.getRequestDispatcher("/views/uploadResource.jsp").forward(request, response);
+            return;
+        }
+
+        Resource resource = new Resource();
+        resource.setTitle(title);
+        resource.setGrade(String.valueOf(gradeId));
+        resource.setSubject(subject);
+        resource.setType(type);
+        resource.setLanguage(language);
+        resource.setFileLink(hasFile ? storedRelativePath : resourceUrl);
+        resource.setUploadedBy(user.getId());
+    resource.setVerified(true);
+    resource.setVerifiedBy(user.getId());
+    resource.setVerifiedAt(new Timestamp(System.currentTimeMillis()));
   
-        // Save the resource to the database
-        resourceDAO resourceDAO = new resourceDAO();
-        int resourceId = resourceDAO.insertResource(resource);
+    // Save the resource to the database
+    int resourceId = dao.insertResource(resource);
         
         if (resourceId > 0) {
             // Success
             request.setAttribute("message", "Resource uploaded successfully!");
             request.setAttribute("messageType", "success");
+            clearFormValues(request);
         } else {
             // Error
             request.setAttribute("message", "Failed to upload resource. Please try again.");
@@ -118,11 +161,18 @@ resource.setUploadedBy(user.getId());  // Set the user ID as the uploader
     
     // Helper method to get the submitted file name
     private String getSubmittedFileName(Part part) {
+        if (part == null) {
+            return "";
+        }
         String contentDisp = part.getHeader("content-disposition");
+        if (contentDisp == null) {
+            return "";
+        }
         String[] items = contentDisp.split(";");
         for (String item : items) {
             if (item.trim().startsWith("filename")) {
-                return item.substring(item.indexOf("=") + 2, item.length() - 1);
+                String fileName = item.substring(item.indexOf('=') + 1).trim().replace("\"", "");
+                return fileName;
             }
         }
         return "";
@@ -130,7 +180,10 @@ resource.setUploadedBy(user.getId());  // Set the user ID as the uploader
     
     // Helper method to validate file type
     private boolean isValidFileType(String fileName, String resourceType) {
-        String fileExtension = fileName.substring(fileName.lastIndexOf(".") + 1).toLowerCase();
+        if (fileName == null || !fileName.contains(".")) {
+            return false;
+        }
+        String fileExtension = fileName.substring(fileName.lastIndexOf('.') + 1).toLowerCase();
         
         switch (resourceType) {
             case "PDF":
@@ -142,5 +195,40 @@ resource.setUploadedBy(user.getId());  // Set the user ID as the uploader
             default:
                 return false;
         }
+    }
+
+    private boolean isValidUrl(String resourceUrl) {
+        String lower = resourceUrl.toLowerCase();
+        return lower.startsWith("http://") || lower.startsWith("https://");
+    }
+
+    private String trimToNull(String value) {
+        if (value == null) {
+            return null;
+        }
+        String trimmed = value.trim();
+        return trimmed.isEmpty() ? null : trimmed;
+    }
+
+    private void prepareFormData(HttpServletRequest request, List<ClassInfo> classes, Map<Integer, List<String>> subjectsByClass) {
+        for (ClassInfo classInfo : classes) {
+            subjectsByClass.computeIfAbsent(classInfo.getId(), key -> new java.util.ArrayList<>());
+        }
+        request.setAttribute("classOptions", classes);
+        request.setAttribute("subjectsByClass", subjectsByClass);
+    }
+
+    private void storeFormValues(HttpServletRequest request, String title, String grade, String subject,
+                                 String type, String language, String resourceUrl) {
+        request.setAttribute("formTitle", title);
+        request.setAttribute("formGrade", grade);
+        request.setAttribute("formSubject", subject);
+        request.setAttribute("formType", type);
+        request.setAttribute("formLanguage", language);
+        request.setAttribute("formResourceUrl", resourceUrl);
+    }
+
+    private void clearFormValues(HttpServletRequest request) {
+        storeFormValues(request, "", "", "", "", "", "");
     }
 }

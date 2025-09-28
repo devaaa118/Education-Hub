@@ -13,7 +13,7 @@ import jakarta.servlet.http.HttpServlet;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.servlet.http.HttpSession;
-@WebServlet({"/studentsignupServlet","studentloginServlet"})
+@WebServlet("studentloginServlet")
 public class studentController extends HttpServlet {
     private userDAO userdao;
 
@@ -28,70 +28,7 @@ protected void doPost(HttpServletRequest request, HttpServletResponse response)
     response.setContentType("text/plain"); // default for all responses
 
     String path = request.getServletPath();
-
-    if ("/studentsignupServlet".equals(path)) {
-        String username = request.getParameter("username");
-        String fullname = request.getParameter("fullname");
-        String grade = request.getParameter("grade");
-        String email = request.getParameter("email");
-        String password_hash = request.getParameter("password_hash");
-        String confirmpassword = request.getParameter("confirmpassword");
-        String role = request.getParameter("role");
-
-        try {
-            boolean isAvailable = userdao.isUsernameAvailable(username);
-
-            if (!isAvailable) {
-                response.getWriter().println("❌ Username already exists!");
-                return;
-            }
-
-            if (!password_hash.equals(confirmpassword)) {
-                response.getWriter().println("❌ Passwords do not match!");
-                return;
-            }
-
-            // ✅ Everything is fine → insert user
-            User user = new User();
-            user.setName(fullname);
-            user.setUsername(username);
-            user.setEmail(email);
-            user.setRole(role);
-            user.setPasswordHash(confirmpassword);
-
-            long userid = userdao.insertUser(user);
-
-            if (userid == -1) {
-                response.getWriter().println("❌ Error: Could not insert user into database.");
-                return;
-            }
-
-            // ✅ Insert student_class mapping
-            try {
-                long class_id = Long.parseLong(grade);
-                userdao.insertStudentClasses(userid, class_id);
-            } catch (SQLException e) {
-                e.printStackTrace();
-                response.getWriter().println("❌ Error: Could not insert student-class mapping.");
-                return;
-            }
-
-            // ✅ Success
-            String successMsg = java.net.URLEncoder.encode("Signup successful! Please login.", "UTF-8");
-            response.sendRedirect(request.getContextPath() + "/views/commonLogin.jsp?success=" + successMsg);
-          
-        } catch (SQLException e) {
-            e.printStackTrace();
-            response.getWriter().println("❌ Database error: " + e.getMessage());
-        } catch (NumberFormatException e) {
-            response.getWriter().println("❌ Invalid grade value.");
-        } catch (Exception e) {
-            response.getWriter().println("❌ Unknown error: " + e.getMessage());
-        }
-
-    } 
-    // In studentController.java, modify the login logic:
-else if("/studentloginServlet".equals(path)){
+ if("/studentloginServlet".equals(path)){
     String username = request.getParameter("username");
     String password = request.getParameter("passwordHash");
 
@@ -105,8 +42,8 @@ else if("/studentloginServlet".equals(path)){
             HttpSession session = request.getSession();
             session.setAttribute("user", user);
             session.setMaxInactiveInterval(30 * 60); // 30 minutes
-            // Redirect to student dashboard
-            response.sendRedirect(request.getContextPath() + "/views/studentDashboard.jsp");
+            // Redirect to student dashboard servlet
+            response.sendRedirect(request.getContextPath() + "/studentDashboard");
         } else {
             // Not a student
             String errorMsg = java.net.URLEncoder.encode("You are not a student. Please use the correct login form.", "UTF-8");
@@ -119,9 +56,7 @@ else if("/studentloginServlet".equals(path)){
     }
 }
 
-    else {
-        response.getWriter().println(" Invalid request path.");
-    }
+    
 }
 
 }

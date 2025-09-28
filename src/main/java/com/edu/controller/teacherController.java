@@ -83,7 +83,7 @@ else if ("/teacherloginServlet".equals(path)) {
             session.setAttribute("user", user);
             session.setMaxInactiveInterval(30 * 60); // 30 minutes
             // Redirect to dashboard
-            resp.sendRedirect(request.getContextPath() + "/views/teacherDashboard.jsp");
+            resp.sendRedirect(request.getContextPath() + "/teacherDashboard");
         } else {
             // Not a teacher
             String errorMsg = java.net.URLEncoder.encode("You are not a teacher. Please use the correct login form.", "UTF-8");

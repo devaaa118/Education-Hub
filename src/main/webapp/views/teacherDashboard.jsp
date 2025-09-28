@@ -1,6 +1,8 @@
-<%-- File: src/main/webapp/views/dashboard.jsp --%>
+<%-- File: src/main/webapp/views/teacherDashboard.jsp --%>
 <%@ page language="java" contentType="text/html; charset=UTF-8" pageEncoding="UTF-8"%>
 <%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
+<%@ taglib prefix="fmt" uri="http://java.sun.com/jsp/jstl/fmt" %>
+<%@ taglib prefix="fn" uri="http://java.sun.com/jsp/jstl/functions" %>
 <!DOCTYPE html>
 <html>
 <head>
@@ -21,24 +23,31 @@
     </style>
 </head>
 <body>
+    <jsp:include page="../common/googleTranslateWidget.jspf" />
     <nav class="navbar navbar-expand-lg navbar-dark bg-primary">
         <div class="container">
-            <a class="navbar-brand" href="#">Education Hub</a>
+            <a class="navbar-brand" href="${pageContext.request.contextPath}/teacherDashboard">Education Hub</a>
             <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarNav">
                 <span class="navbar-toggler-icon"></span>
             </button>
             <div class="collapse navbar-collapse" id="navbarNav">
                 <ul class="navbar-nav mr-auto">
-                    <li class="nav-item active"><a class="nav-link" href="${pageContext.request.contextPath}/dashboard">Dashboard</a>
+                    <li class="nav-item active"><a class="nav-link" href="${pageContext.request.contextPath}/teacherDashboard">Dashboard</a>
 
                     </li>
                     
                     <c:if test="${user.role eq 'teacher'}">
-                        <li class="nav-item"><a class="nav-link" href="${pageContext.request.contextPath}/upload-resource">Upload Resource</a>
+                        <li class="nav-item"><a class="nav-link" href="${pageContext.request.contextPath}/teacher/library">Resource Library</a>
 
                         </li>
                         <li class="nav-item">
                             <a class="nav-link" href="${pageContext.request.contextPath}/my-resources">My Resources</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="${pageContext.request.contextPath}/teacher/quizzes">Quizzes</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="${pageContext.request.contextPath}/teacher/tutoring">Tutoring Calendar</a>
                         </li>
                     </c:if>
                     
@@ -67,33 +76,110 @@
         <c:if test="${user.role eq 'teacher'}">
             <div class="row mb-4">
                 <div class="col-md-4">
-                    <div class="card text-white bg-primary">
-                        <div class="card-body">
-                            <h5 class="card-title">My Resources</h5>
-                            <p class="card-text">You have uploaded ${resourceCount} resources</p>
-                            <a href="${pageContext.request.contextPath}/my-resources" class="btn btn-light">View All</a>
+                    <div class="card text-white bg-primary h-100">
+                        <div class="card-body d-flex flex-column justify-content-between">
+                            <div>
+                                <h5 class="card-title">My Resources</h5>
+                                <p class="card-text mb-3">You have uploaded ${resourceCount} resources</p>
+                            </div>
+                            <a href="${pageContext.request.contextPath}/my-resources" class="btn btn-light">Manage Resources</a>
                         </div>
                     </div>
                 </div>
                 <div class="col-md-4">
-                    <div class="card text-white bg-success">
+                    <div class="card text-white bg-success h-100">
+                        <div class="card-body d-flex flex-column justify-content-between">
+                            <div>
+                                <h5 class="card-title">Upload New Resource</h5>
+                                <p class="card-text mb-3">Share educational materials with students</p>
+                            </div>
+                            <a href="${pageContext.request.contextPath}/teacher/library" class="btn btn-light">Open Library</a>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="card bg-light h-100">
                         <div class="card-body">
-                            <h5 class="card-title">Upload New Resource</h5>
-                            <p class="card-text">Share educational materials with students</p><a href="${pageContext.request.contextPath}/upload-resource" class="btn btn-light">Upload Now</a>
-
+                            <h5 class="card-title">Coverage Overview</h5>
+                            <p class="mb-2"><strong>Subjects:</strong> ${fn:length(subjectStats)}</p>
+                            <p class="mb-0"><strong>Grades:</strong> ${fn:length(gradeStats)}</p>
                         </div>
                     </div>
                 </div>
             </div>
-            
+
+            <div class="row mb-4">
+                <div class="col-md-6">
+                    <div class="card text-white bg-warning h-100">
+                        <div class="card-body d-flex flex-column justify-content-between">
+                            <div>
+                                <h5 class="card-title">Create a Quiz</h5>
+                                <p class="card-text mb-3">Design assessments tailored to your class and publish instantly.</p>
+                            </div>
+                            <a href="${pageContext.request.contextPath}/teacher/quizzes" class="btn btn-light">Open Quiz Builder</a>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <div class="card text-white bg-info h-100">
+                        <div class="card-body d-flex flex-column justify-content-between">
+                            <div>
+                                <h5 class="card-title">Schedule Tutoring</h5>
+                                <p class="card-text mb-3">Set up live support sessions and share your availability.</p>
+                            </div>
+                            <a href="${pageContext.request.contextPath}/teacher/tutoring" class="btn btn-light">Manage Tutoring Calendar</a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="row mb-4">
+                <div class="col-md-6">
+                    <div class="card">
+                        <div class="card-body">
+                            <h5 class="card-title">Subjects Breakdown</h5>
+                            <c:if test="${empty subjectStats}">
+                                <p class="text-muted mb-0">No uploads yet.</p>
+                            </c:if>
+                            <ul class="list-group list-group-flush">
+                                <c:forEach var="stat" items="${subjectStats}">
+                                    <li class="list-group-item d-flex justify-content-between align-items-center">
+                                        <span>${stat.label}</span>
+                                        <span class="badge badge-primary badge-pill">${stat.count}</span>
+                                    </li>
+                                </c:forEach>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <div class="card">
+                        <div class="card-body">
+                            <h5 class="card-title">Grade Coverage</h5>
+                            <c:if test="${empty gradeStats}">
+                                <p class="text-muted mb-0">No uploads yet.</p>
+                            </c:if>
+                            <ul class="list-group list-group-flush">
+                                <c:forEach var="stat" items="${gradeStats}">
+                                    <li class="list-group-item d-flex justify-content-between align-items-center">
+                                        <span>${stat.label}</span>
+                                        <span class="badge badge-secondary badge-pill">${stat.count}</span>
+                                    </li>
+                                </c:forEach>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
             <h3 class="mb-3">Recently Uploaded Resources</h3>
-            
+
             <c:if test="${empty recentResources}">
                 <div class="alert alert-info">
-                    You haven't uploaded any resources yet. <a href="${pageContext.request.contextPath}/upload">Upload your first resource</a>
+                    You haven't uploaded any resources yet. <a href="${pageContext.request.contextPath}/teacher/library">Open the resource library</a>
                 </div>
             </c:if>
-            
+
             <div class="row">
                 <c:forEach var="resource" items="${recentResources}">
                     <div class="col-md-4">
@@ -105,6 +191,9 @@
                                     <span class="badge badge-primary">${resource.type}</span>
                                     <span class="badge badge-secondary">${resource.language}</span>
                                 </p>
+                                <c:if test="${not empty resource.createdAt}">
+                                    <p class="small text-muted mb-2">Uploaded on <fmt:formatDate value="${resource.createdAt}" pattern="dd MMM yyyy" /></p>
+                                </c:if>
                                 <a href="${pageContext.request.contextPath}/view-resource?id=${resource.id}" class="card-link">View</a>
                                 <a href="${pageContext.request.contextPath}/edit-resource?id=${resource.id}" class="card-link">Edit</a>
                                 <a href="${pageContext.request.contextPath}/delete-resource?id=${resource.id}" class="card-link text-danger" onclick="return confirm('Are you sure you want to delete this resource?')">Delete</a>

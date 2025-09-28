@@ -1,6 +1,7 @@
 package com.edu.model;
 
 import javax.persistence.Entity;
+import java.sql.Timestamp;
 
 @Entity
 public class Resource {
@@ -11,12 +12,12 @@ public class Resource {
     private String fileLink;    // VARCHAR(500)
     private String type;        // ENUM('PDF', 'Video', 'Quiz')
     private String language;    // ENUM('Tamil', 'English')
-// Add this field to your Resource class
-private long uploadedBy;  // Foreign key to users table
-
-// Add these getter and setter methods
-public long getUploadedBy() { return uploadedBy; }
-public void setUploadedBy(long uploadedBy) { this.uploadedBy = uploadedBy; }
+    private Timestamp createdAt;
+    private long uploadedBy;  // Foreign key to users table
+    private Integer streamId; // Optional stream association for grades 11/12
+    private boolean verified;
+    private Long verifiedBy;
+    private Timestamp verifiedAt;
 
     // Getters & Setters
     public int getId() { return id; }
@@ -39,4 +40,22 @@ public void setUploadedBy(long uploadedBy) { this.uploadedBy = uploadedBy; }
 
     public String getLanguage() { return language; }
     public void setLanguage(String language) { this.language = language; }
+
+    public Timestamp getCreatedAt() { return createdAt; }
+    public void setCreatedAt(Timestamp createdAt) { this.createdAt = createdAt; }
+
+    public long getUploadedBy() { return uploadedBy; }
+    public void setUploadedBy(long uploadedBy) { this.uploadedBy = uploadedBy; }
+
+    public Integer getStreamId() { return streamId; }
+    public void setStreamId(Integer streamId) { this.streamId = streamId; }
+
+    public boolean isVerified() { return verified; }
+    public void setVerified(boolean verified) { this.verified = verified; }
+
+    public Long getVerifiedBy() { return verifiedBy; }
+    public void setVerifiedBy(Long verifiedBy) { this.verifiedBy = verifiedBy; }
+
+    public Timestamp getVerifiedAt() { return verifiedAt; }
+    public void setVerifiedAt(Timestamp verifiedAt) { this.verifiedAt = verifiedAt; }
 }

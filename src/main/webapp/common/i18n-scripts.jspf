@@ -1,0 +1,7 @@
+<script>
+	window.APP_CONTEXT_PATH = '${pageContext.request.contextPath}';
+</script>
+<script src="https://unpkg.com/i18next@23.11.5/dist/umd/i18next.min.js"></script>
+<script src="https://unpkg.com/i18next-http-backend@2.5.1/dist/umd/i18nextHttpBackend.min.js"></script>
+<script src="https://unpkg.com/i18next-browser-languagedetector@7.1.0/dist/umd/i18nextBrowserLanguageDetector.min.js"></script>
+<script src="${pageContext.request.contextPath}/js/i18n.js"></script>

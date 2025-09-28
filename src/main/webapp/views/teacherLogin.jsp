@@ -17,6 +17,7 @@
     </style>
 </head>
 <body>
+<jsp:include page="../common/googleTranslateWidget.jspf" />
     <div class="container">
         <div class="login-container">
             <h2 class="text-center mb-4">Teacher Login</h2>

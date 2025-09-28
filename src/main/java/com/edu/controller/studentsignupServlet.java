@@ -75,10 +75,9 @@ public class studentsignupServlet extends HttpServlet {
             request.getRequestDispatcher("/views/studentSignup.jsp").forward(request, response);
             return;
         }
-        System.out.println("[DEBUG] Signup flow completed successfully for userId=" + userId);
-        // Forward to a success page instead of redirecting immediately, so user can see debug output
-        request.setAttribute("success", "Signup successful! You may now log in.");
-        request.getRequestDispatcher("/views/signupSuccess.jsp").forward(request, response);
+    System.out.println("[DEBUG] Signup flow completed successfully for userId=" + userId);
+    // Redirect to studentLogin.jsp after successful signup
+    response.sendRedirect(request.getContextPath() + "/views/studentLogin.jsp");
     }
 
     // Map stream name to stream_id (hardcoded for Science, Commerce, Arts)

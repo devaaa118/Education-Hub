@@ -1,0 +1,61 @@
+{
+  "app": {
+    "title": "Education Hub"
+  },
+  "language": {
+    "label": "Language",
+    "english": "English",
+    "tamil": "Tamil"
+  },
+  "nav": {
+    "studentDashboard": "Student Dashboard",
+    "home": "Home",
+    "resources": "Resources",
+    "quizzes": "Quizzes",
+    "tutoring": "Tutoring",
+    "assignments": "Assignments",
+    "profile": "Profile",
+    "logout": "Logout"
+  },
+  "studentDashboard": {
+  "pageTitle": "Student Dashboard",
+  "pageTitleFull": "Student Dashboard - Education Hub",
+  "welcome": "Welcome back, <strong>{{name}}</strong>!",
+    "subtitle": "Keep an eye on your learning progress and jump into the resources curated for your class.",
+    "browseResources": "Browse Resources",
+    "takeQuiz": "Take a Quiz",
+    "progressTitle": "Learning Progress",
+    "progressSubtitle": "A snapshot of how you are moving through the materials assigned to your class.",
+    "totalResources": "Total resources",
+    "overallCompletion": "Overall completion",
+    "completed": "Completed",
+    "completedCaption": "Great job finishing these!",
+    "inProgress": "In progress",
+    "inProgressCaption": "Keep the momentum going.",
+    "notStarted": "Not started",
+    "notStartedCaption": "Perfect place to begin.",
+    "subjectsTitle": "Your Subjects",
+    "subjectsSubtitle": "Jump into a subject to explore its latest lessons, notes, and practice material.",
+    "subjectsEmpty": "Your teachers have not assigned any subjects yet. Check back soon!",
+    "streamLabel": "Stream"
+  },
+  "resourcesPage": {
+    "title": "Resources for {{subject}}",
+    "header": "Resources for {{className}} - {{subject}}",
+    "stream": "Stream",
+    "empty": "No resources available for this subject and class.",
+    "meta": "Grade: {{grade}} | Subject: {{subject}} | Type: {{type}} | Language: {{language}}",
+    "status": "Status",
+    "updateStatus": "Update Status",
+    "notesLabel": "Notes (optional)",
+    "saveProgress": "Save Progress",
+    "viewResource": "View Resource",
+    "backToResources": "Back to Resources",
+    "backToDashboard": "Back to Dashboard",
+    "lastViewed": "Last viewed: {{date}}",
+    "completedAt": "Completed: {{date}}"
+  },
+  "alerts": {
+    "translationFallback": "⚠️ Content shown in English due to translation error."
+  }
+}

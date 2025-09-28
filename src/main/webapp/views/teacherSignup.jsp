@@ -75,6 +75,7 @@
     </style>
 </head>
 <body>
+<jsp:include page="../common/googleTranslateWidget.jspf" />
 <div class="signup-container">
     <div class="signup-title"><i class="fa-solid fa-chalkboard-user"></i> Teacher Signup</div>
     <form action="<%= request.getContextPath() %>/teachersignupServlet" method="post" style="display: flex; flex-direction: column; gap: 0.5rem;">

@@ -93,9 +93,7 @@
                         <a class="nav-link" href="${pageContext.request.contextPath}/resources"><i class="fa-solid fa-book me-2"></i>Browse Resources</a>
                     </li>
                 </c:if>
-                <li class="nav-item">
-                    <a class="nav-link" href="${pageContext.request.contextPath}/profile"><i class="fa-solid fa-user me-2"></i>Profile</a>
-                </li>
+    
             </ul>
             <div class="d-flex">
                 <div class="me-3 d-flex align-items-center text-white fw-semibold">

@@ -81,7 +81,7 @@
 
             <c:if test="${resource.type eq 'PDF' && user.role eq 'student' && !externalResource}">
                 <div class="ratio ratio-16x9">
-                    <iframe src="${resourceLink}" title="${resource.title}" allowfullscreen></iframe>
+                    <iframe src="${pageContext.request.contextPath}/resource/stream?id=${resource.id}" title="${resource.title}" allowfullscreen></iframe>
                 </div>
             </c:if>
 

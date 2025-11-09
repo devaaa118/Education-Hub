@@ -1,4 +1,4 @@
-// File: src/main/java/com/edu/controller/DashboardServlet.java
+
 package com.edu.controller;
 
 import com.edu.dao.resourceDAO;
@@ -31,23 +31,18 @@ public class DashboardServlet extends HttpServlet {
         resourceDAO resourceDAO = new resourceDAO();
         
         if ("teacher".equals(user.getRole())) {
-            // For teachers, show their uploaded resources
             List<Resource> recentResources = resourceDAO.getResourcesByUserId(user.getId());
             int resourceCount = recentResources.size();
             
             request.setAttribute("recentResources", recentResources);
             request.setAttribute("resourceCount", resourceCount);
         } else if ("student".equals(user.getRole())) {
-            // For students, show available resources with filters
-            
-            // Get filter parameters
             String grade = request.getParameter("grade");
             String subject = request.getParameter("subject");
             String type = request.getParameter("type");
             String language = request.getParameter("language");
             String search = request.getParameter("search");
             
-            // Get page parameter
             int page = 1;
             String pageParam = request.getParameter("page");
             if (pageParam != null && !pageParam.isEmpty()) {
@@ -57,21 +52,18 @@ public class DashboardServlet extends HttpServlet {
                         page = 1;
                     }
                 } catch (NumberFormatException e) {
-                    // Ignore and use default
+           
                 }
             }
-            
-            // Get resources based on filters
+        
             List<Resource> resources;
             int totalResources;
             
             if (search != null && !search.isEmpty()) {
-                // Search by keyword
-                resources = resourceDAO.searchResources(search);
+               resources = resourceDAO.searchResources(search);
                 totalResources = resources.size();
                 
-                // Apply pagination manually
-                int fromIndex = (page - 1) * PAGE_SIZE;
+              int fromIndex = (page - 1) * PAGE_SIZE;
                 int toIndex = Math.min(fromIndex + PAGE_SIZE, resources.size());
                 
                 if (fromIndex < resources.size()) {
@@ -80,7 +72,7 @@ public class DashboardServlet extends HttpServlet {
                     resources.clear();
                 }
             } else if (grade != null || subject != null || type != null || language != null) {
-                // Apply filters
+            
                 resources = resourceDAO.getFilteredResources(grade, subject, type, language, null);
                 totalResources = resources.size();
                 

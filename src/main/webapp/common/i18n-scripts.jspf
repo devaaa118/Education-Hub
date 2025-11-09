@@ -1,4 +1,4 @@
-<script>
+t<script>
 	window.APP_CONTEXT_PATH = '${pageContext.request.contextPath}';
 </script>
 <script src="https://unpkg.com/i18next@23.11.5/dist/umd/i18next.min.js"></script>
